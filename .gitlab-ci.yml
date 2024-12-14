@@ -1,0 +1,43 @@
+stages:
+  - build
+  - test
+  - docker
+
+variables:
+  # Replace these with your Docker Hub credentials
+  DOCKER_IMAGE: oussamamahmoudicybersec/projet-devops
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+# Step 1: Build the project with Maven
+build-maven:
+  stage: build
+  image: maven:3.8.8-eclipse-temurin-17
+  script:
+    - echo "Building the Spring Boot application..."
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 hour
+
+# Step 2: Run tests
+test-maven:
+  stage: test
+  image: maven:3.8.8-eclipse-temurin-17
+  script:
+    - echo "Running tests..."
+    - mvn test
+
+# Step 3: Build and publish Docker image
+build-docker:
+  stage: docker
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $DOCKER_IMAGE:latest .
+    - echo "Pushing Docker image to Docker Hub..."
+    - docker push $DOCKER_IMAGE:latest

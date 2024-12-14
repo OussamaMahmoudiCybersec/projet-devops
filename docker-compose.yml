@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  app:
+    image: projet-devops:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8085:6969"
+    environment:
+      - SPRING_APPLICATION_NAME=projet-devops
+      - SERVER_PORT=6969
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/projetdevopsdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: projetdevopsdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
